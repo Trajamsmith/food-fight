@@ -13,6 +13,18 @@ import 'bulma/css/bulma.css';
 import 'animate.css/animate.css';
 import './styles/main.scss';
 
+// ─── REDUX STUFF ────────────────────────────────────────────────────────────────
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { Provider } from 'react-redux';
+import logger from 'redux-logger';
+import { login } from '../../redux/actions';
+
+import reducer from '../../redux/reducer';
+
+const store = createStore(reducer, applyMiddleware(logger));
+store.subscribe(() => console.log('DISPATCH OCCURRING'));
+//────────────────────────────────────────────────────────────────────────────────
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -136,36 +148,39 @@ class App extends React.Component {
 
 
   render() {
+    console.log('STORE', store.getState());
     let room = this.state.loggedInUsername
       ? <Route path="/rooms/:roomID" render={(props) => <Room username={this.state.loggedInUsername} {...props} />} />
       : <Route path="/rooms/:roomID" component={Room} />
     return (
-      <BrowserRouter>
-        <div>
+      <Provider store={store}>
+        <BrowserRouter>
           <div>
-            <Navbar
-              login={this.login.bind(this)}
-              logout={this.logout.bind(this)}
-              subscribe={this.subscribe.bind(this)}
-              loggedIn={this.state.loggedIn}
-              username={this.state.loggedInUsername}
-              error={this.state.loginError}
-              subscribeError={this.state.subscribeError} />
-          </div >
-          <Route exact path="/" render={
-            (props) => <MainView
-              searchUsers={this.searchUsers.bind(this)}
-              searchedUsers={this.state.searchedUsers}
-              loggedIn={this.state.loggedIn}
-              loggedInUser={this.state.loggedInUsername}
-              {...props} />} />
-          <Route path="/signup" render={
-            (props) => <SignupPage
-              subscribe={this.subscribe.bind(this)}
-              {...props} />} />
-          {room}
-        </div>
-      </BrowserRouter>
+            <div>
+              <Navbar
+                login={this.login.bind(this)}
+                logout={this.logout.bind(this)}
+                subscribe={this.subscribe.bind(this)}
+                loggedIn={this.state.loggedIn}
+                username={this.state.loggedInUsername}
+                error={this.state.loginError}
+                subscribeError={this.state.subscribeError} />
+            </div >
+            <Route exact path="/" render={
+              (props) => <MainView
+                searchUsers={this.searchUsers.bind(this)}
+                searchedUsers={this.state.searchedUsers}
+                loggedIn={this.state.loggedIn}
+                loggedInUser={this.state.loggedInUsername}
+                {...props} />} />
+            <Route path="/signup" render={
+              (props) => <SignupPage
+                subscribe={this.subscribe.bind(this)}
+                {...props} />} />
+            {room}
+          </div>
+        </BrowserRouter>
+      </Provider>
     );
   }
 }
