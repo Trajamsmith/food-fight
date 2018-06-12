@@ -1,5 +1,7 @@
 const initialState = {
   loggedIn: false,
+  username: '',
+  searchedUsers: [],
 };
 
 function reducer(state = initialState, action) {
@@ -13,6 +15,8 @@ function reducer(state = initialState, action) {
         loggedIn: false,
         username: '',
       });
+    case 'SEARCH_USERS':
+      return Object.assign({}, state, action.payload);
     default:
       return state;
   }

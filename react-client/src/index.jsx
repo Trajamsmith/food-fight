@@ -17,16 +17,16 @@ import './styles/main.scss';
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { Provider, connect } from 'react-redux';
 import logger from 'redux-logger';
-import { login, logout } from '../../redux/actions';
+import { login, logout, searchUsers } from '../../redux/actions';
 
 import reducer from '../../redux/reducer';
 
 const store = createStore(reducer, applyMiddleware(logger));
-store.subscribe(() => console.log('DISPATCH OCCURRING'));
 
 const mapStateToProps = state => {
   return {
     loggedInUsername: state.username,
+    searchedUsers: state.searchedUsers,
   };
 };
 
@@ -34,6 +34,7 @@ const mapDispatchToProps = dispatch => {
   return {
     login: (username) => dispatch(login(username)),
     logout: () => dispatch(logout()),
+    searchUsers: (users) => dispatch(searchUsers(users)),
   };
 };
 //────────────────────────────────────────────────────────────────────────────────
@@ -45,10 +46,7 @@ class ConnectedApp extends React.Component {
       query: '',
       restaurants: [],
 
-      loggedIn: false,
       loginError: false,
-
-      searchedUsers: []
     };
   }
 
@@ -87,9 +85,7 @@ class ConnectedApp extends React.Component {
     axios.post('/searchUsers', { query })
       .then(res => {
         console.log('RESULTS', res);
-        this.setState({
-          searchedUsers: res.data
-        });
+        this.props.searchUsers(res.data);
       });
   }
 
@@ -172,7 +168,7 @@ class ConnectedApp extends React.Component {
           <Route exact path="/" render={
             (props) => <MainView
               searchUsers={this.searchUsers.bind(this)}
-              searchedUsers={this.state.searchedUsers}
+              searchedUsers={this.props.searchedUsers}
               loggedInUser={this.state.loggedInUsername}
               {...props} />} />
           <Route path="/signup" render={
