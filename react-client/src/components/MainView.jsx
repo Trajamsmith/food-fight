@@ -27,7 +27,6 @@ class MainView extends React.Component {
           (props) => <CreateRoomContainer
             searchUsers={this.props.searchUsers}
             searchedUsers={this.props.searchedUsers}
-            loggedIn={this.props.loggedIn}
             loggedInUser={this.props.loggedInUser}
             {...props} />} />,
         < Route path="/rooms/:roomID" component={Room} />

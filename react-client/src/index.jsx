@@ -15,17 +15,30 @@ import './styles/main.scss';
 
 // ─── REDUX STUFF ────────────────────────────────────────────────────────────────
 import { createStore, combineReducers, applyMiddleware } from 'redux';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import logger from 'redux-logger';
-import { login } from '../../redux/actions';
+import { login, logout } from '../../redux/actions';
 
 import reducer from '../../redux/reducer';
 
 const store = createStore(reducer, applyMiddleware(logger));
 store.subscribe(() => console.log('DISPATCH OCCURRING'));
+
+const mapStateToProps = state => {
+  return {
+    loggedInUsername: state.username,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    login: (username) => dispatch(login(username)),
+    logout: () => dispatch(logout()),
+  };
+};
 //────────────────────────────────────────────────────────────────────────────────
 
-class App extends React.Component {
+class ConnectedApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -33,7 +46,6 @@ class App extends React.Component {
       restaurants: [],
 
       loggedIn: false,
-      loggedInUsername: '',
       loginError: false,
 
       searchedUsers: []
@@ -45,9 +57,8 @@ class App extends React.Component {
       .then(res => {
         if (res.data.user) {
           console.log('Logged in as:', res.data.user.email);
+          this.props.login(res.data.user.email);
           this.setState({
-            loggedIn: true,
-            loggedInUsername: res.data.user.email,
             loginError: false,
           });
         }
@@ -95,10 +106,7 @@ class App extends React.Component {
       .then((res) => {
         const email = JSON.parse(res.config.data).email;
         if (res) {
-          this.setState({
-            loggedIn: true,
-            loggedInUsername: email
-          })
+          this.props.login(email);
         }
       })
       .catch(() => {
@@ -117,10 +125,7 @@ class App extends React.Component {
       .then(res => {
         if (res.config.data) {
           console.log('Logged in as:', JSON.parse(res.config.data).email);
-          this.setState({
-            loggedIn: true,
-            loggedInUsername: JSON.parse(res.config.data).email
-          });
+          this.props.login(JSON.parse(res.config.data).email);
         }
       })
       .catch(
@@ -137,9 +142,8 @@ class App extends React.Component {
     axios.get('/logout')
       .then(res => {
         console.log('Logging out');
+        this.props.logout();
         this.setState({
-          loggedIn: false,
-          loggedInUsername: '',
           loginError: false
         });
       })
@@ -149,40 +153,39 @@ class App extends React.Component {
 
   render() {
     console.log('STORE', store.getState());
+    console.log('INDEX PROPS', this.props);
     let room = this.state.loggedInUsername
       ? <Route path="/rooms/:roomID" render={(props) => <Room username={this.state.loggedInUsername} {...props} />} />
       : <Route path="/rooms/:roomID" component={Room} />
     return (
-      <Provider store={store}>
-        <BrowserRouter>
+      <BrowserRouter>
+        <div>
           <div>
-            <div>
-              <Navbar
-                login={this.login.bind(this)}
-                logout={this.logout.bind(this)}
-                subscribe={this.subscribe.bind(this)}
-                loggedIn={this.state.loggedIn}
-                username={this.state.loggedInUsername}
-                error={this.state.loginError}
-                subscribeError={this.state.subscribeError} />
-            </div >
-            <Route exact path="/" render={
-              (props) => <MainView
-                searchUsers={this.searchUsers.bind(this)}
-                searchedUsers={this.state.searchedUsers}
-                loggedIn={this.state.loggedIn}
-                loggedInUser={this.state.loggedInUsername}
-                {...props} />} />
-            <Route path="/signup" render={
-              (props) => <SignupPage
-                subscribe={this.subscribe.bind(this)}
-                {...props} />} />
-            {room}
-          </div>
-        </BrowserRouter>
-      </Provider>
+            <Navbar
+              login={this.login.bind(this)}
+              logout={this.logout.bind(this)}
+              subscribe={this.subscribe.bind(this)}
+              username={this.state.loggedInUsername}
+              error={this.state.loginError}
+              subscribeError={this.state.subscribeError} />
+          </div >
+          <Route exact path="/" render={
+            (props) => <MainView
+              searchUsers={this.searchUsers.bind(this)}
+              searchedUsers={this.state.searchedUsers}
+              loggedInUser={this.state.loggedInUsername}
+              {...props} />} />
+          <Route path="/signup" render={
+            (props) => <SignupPage
+              subscribe={this.subscribe.bind(this)}
+              {...props} />} />
+          {room}
+        </div>
+      </BrowserRouter>
     );
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('app'));
+const App = connect(mapStateToProps, mapDispatchToProps)(ConnectedApp);
+
+ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('app'));

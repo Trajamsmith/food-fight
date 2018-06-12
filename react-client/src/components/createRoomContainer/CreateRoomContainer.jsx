@@ -42,8 +42,7 @@ class CreateRoomContainer extends React.Component {
           <article className="tile is-child notification create-room-container">
             <div>
               <CreateRoom
-                combatants={this.state.combatants}
-                loggedIn={this.props.loggedIn} />
+                combatants={this.state.combatants} />
             </div>
           </article>
         </div>

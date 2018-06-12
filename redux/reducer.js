@@ -7,6 +7,11 @@ function reducer(state = initialState, action) {
     case 'USER_LOGGED_IN':
       return Object.assign({}, state, {
         loggedIn: true,
+      }, action.payload);
+    case 'USER_LOGGING_OUT':
+      return Object.assign({}, state, {
+        loggedIn: false,
+        username: '',
       });
     default:
       return state;

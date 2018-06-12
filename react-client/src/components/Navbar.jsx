@@ -5,7 +5,9 @@ import UserMenu from './AuthUserMenu/UserMenu.jsx';
 import { connect } from 'react-redux';
 
 const mapStateToProps = state => {
-  return { loggedIn: state.loggedIn }
+  return {
+    loggedIn: state.loggedIn,
+  }
 };
 
 class ConnectedNavbar extends React.Component {
@@ -16,8 +18,7 @@ class ConnectedNavbar extends React.Component {
   render() {
     let authentication = this.props.loggedIn ? (
       <UserMenu
-        logout={this.props.logout}
-        username={this.props.username} />
+        logout={this.props.logout} />
     ) : (
         [<div className="control" key="1">
           <LoginDialog
